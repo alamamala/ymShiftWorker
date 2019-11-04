@@ -18,12 +18,13 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 
 // Load client secrets from a local file.
+function doIt() {
 fs.readFile('credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   // Authorize a client with credentials, then call the Google Sheets API.
   authorize(JSON.parse(content), listMajors);
 });
-
+};
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
@@ -74,24 +75,24 @@ function getNewToken(oAuth2Client, callback) {
   });
 }
 
-/**
+/*
  * Prints the names and majors of students in a sample spreadsheet:
  * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  */
-
+/*
 function whoIsToday(row, timeNow) {
-        if ((row[(timeNow.getDate()-1)]=='ночь') && ((8>timeNow.getHours()) || (timeNow.getHours()>20))) {
-            return resultToday = 'Сейчас в смене: ' + telegramChat(row[0]) + '\n\n';
-        } else if ((row[timeNow.getDate()]=='день') && ((timeNow.getHours()<20) && (8<timeNow.getHours()))) {
-            console.log('true?!');
-            return resultToday = 'Сейчас в смене: ' + telegramChat(row[0]) + '\n\n';
-        };
+    if ((row[(timeNow.getDate()-1)]=='ночь') && ((8>timeNow.getHours()) || (timeNow.getHours()>20))) {
+        return resultToday = '\n_Сейчас в смене: ' + telegramChat(row[0]) + '_\n';
+    } else if ((row[timeNow.getDate()]=='день') && ((timeNow.getHours()<20) && (8<timeNow.getHours()))) {
+        return resultToday = '\n_Сейчас в смене: ' + telegramChat(row[0]) + '_\n';
+    };
 };
-
- var x = fs.readFileSync("googleApiSpreadsheet.txt", "utf8");
+*/
+var x = fs.readFileSync("googleApiSpreadsheet.txt", "utf8");
 var result = '',
     resultToday = '';
+    
 function listMajors(auth) {
   let d = (new Date);
   const sheets = google.sheets({version: 'v4', auth});
@@ -103,28 +104,90 @@ function listMajors(auth) {
     const rows = res.data.values;
     if (rows.length) {
       // Print columns A and E, which correspond to indices 0 and 4.
+      result = '';
+      resultToday = '';
       rows.map((row) => {
       // console.log(`${row[0]} ${row[d]}`);
       if (row[d.getDate()]=='день') {
         result += 'В день(c 8:00 до 20:00): ' + telegramChat(row[0]) + '\n'
-    };
-      if (row[d.getDate()]=='ночь') {
-        result += 'В ночь(c 20:00 до 8:00 на '+ (d.getDate()+1) + ' число): ' + telegramChat(row[0]) + '\n'
-    };
-    if (true) {
-        whoIsToday(row, d);
-        result += resultToday;
-      };
+/*        whoIsToday(row, d);
+        result += resultToday; */
+      }
 });
-    return result;
+rows.map((row) => {
+  if (row[d.getDate()]=='ночь') {
+    result += 'В ночь(c 20:00 до 8:00 на '+ (d.getDate()+1) + ' число): ' + telegramChat(row[0]) + '\n'
+/*        whoIsToday(row, d);
+    result += resultToday; */
+}
+});
+rows.map((row) => {
+  if ((row[(d.getDate()-1)]=='ночь') && ((8>d.getHours()) || (d.getHours()>20))) {
+    resultToday = '\nСейчас в смене: ' + telegramChat(row[0]);
+    result += resultToday;
+  } else if ((row[d.getDate()]=='день') && ((d.getHours()<20) && (8<d.getHours()))) {
+    resultToday = '\nСейчас в смене: ' + telegramChat(row[0]);
+    result += resultToday;
+  };
+});
+
     } else {
       console.log('No data found.');
     }
   });
+  return result;
+};
+
+async function timer(ctx){
+  ctx.replyWithMarkdown('Забираю данные со страницы с расписанием. Это займет 5 секунд');
+  console.log(ctx.update.message.message_id);
+  console.log(ctx.update.message.chat.id);
+  await sleep(1000);
+  ctx.telegram.editMessageText(
+    ctx.update.message.chat.id,
+    ctx.update.message.message_id+1,
+    ctx.update.message.message_id+1,
+    `Забираю данные со страницы с расписанием. Это займет 4 секунды`,
+  );
+  await sleep(1000);
+  ctx.telegram.editMessageText(
+    ctx.update.message.chat.id,
+    ctx.update.message.message_id+1,
+    ctx.update.message.message_id+1,
+    `Забираю данные со страницы с расписанием. Это займет 3 секунды`,
+  );
+  await sleep(1000);
+  ctx.telegram.editMessageText(
+    ctx.update.message.chat.id,
+    ctx.update.message.message_id+1,
+    ctx.update.message.message_id+1,
+    `Забираю данные со страницы с расписанием. Это займет 2 секунды`,
+  );
+  await sleep(1000);
+  ctx.telegram.editMessageText(
+    ctx.update.message.chat.id,
+    ctx.update.message.message_id+1,
+    ctx.update.message.message_id+1,
+    `Забираю данные со страницы с расписанием. Это займет 1 секунду`,
+  );
+};
+
+function sleep(ms){
+  return new Promise(resolve=>{
+      setTimeout(resolve,ms)
+  })
 };
 
 app.hears('/today', ctx => {
-	ctx.replyWithMarkdown(result);
+    doIt();
+    timer(ctx);
+    setTimeout(function(){
+    return ctx.telegram.editMessageText(
+      ctx.update.message.chat.id,
+      ctx.update.message.message_id+1,
+      ctx.update.message.message_id+1,
+      result);
+    },5000);
 });
 
 app.hears('/start', ctx => {
