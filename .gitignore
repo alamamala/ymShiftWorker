@@ -3,5 +3,6 @@ table.xlsx
 secret.json
 credentials.json
 googleApiSpreadsheet.txt
+users.json
 token.json
 node_modules

@@ -188,6 +188,12 @@ app.hears('/today', ctx => {
       ctx.update.message.message_id+1,
       result);
     },5000);
+    console.log(ctx.from);
+        var json = JSON.stringify(ctx.from) + ',\n';
+        fs.appendFile("users.json", json , function (err) {
+            if (err) throw err;
+            console.log('The "data to append" was appended to file!');
+         });
 });
 
 app.hears('/start', ctx => {
