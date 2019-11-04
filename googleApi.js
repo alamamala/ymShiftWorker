@@ -80,11 +80,20 @@ function getNewToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  */
 
+function whoIsToday(row, timeNow) {
+        if ((row[(timeNow.getDate()-1)]=='ночь') && ((8>timeNow.getHours()) || (timeNow.getHours()>20))) {
+            return resultToday = 'Сейчас в смене: ' + telegramChat(row[0]) + '\n\n';
+        } else if ((row[timeNow.getDate()]=='день') && ((timeNow.getHours()<20) && (8<timeNow.getHours()))) {
+            console.log('true?!');
+            return resultToday = 'Сейчас в смене: ' + telegramChat(row[0]) + '\n\n';
+        };
+};
+
  var x = fs.readFileSync("googleApiSpreadsheet.txt", "utf8");
-console.log(x);
-var result = '';
+var result = '',
+    resultToday = '';
 function listMajors(auth) {
-  let d = (new Date).getDate();
+  let d = (new Date);
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
     spreadsheetId: x,
@@ -96,12 +105,16 @@ function listMajors(auth) {
       // Print columns A and E, which correspond to indices 0 and 4.
       rows.map((row) => {
       // console.log(`${row[0]} ${row[d]}`);
-      if (row[d]=='день') {
+      if (row[d.getDate()]=='день') {
         result += 'В день(c 8:00 до 20:00): ' + telegramChat(row[0]) + '\n'
     };
-      if (row[d]=='ночь') {
-        result += 'В ночь(c 20:00 до 8:00 на '+ (d+1) + ' число): ' + telegramChat(row[0]) + '\n'
-    }
+      if (row[d.getDate()]=='ночь') {
+        result += 'В ночь(c 20:00 до 8:00 на '+ (d.getDate()+1) + ' число): ' + telegramChat(row[0]) + '\n'
+    };
+    if (true) {
+        whoIsToday(row, d);
+        result += resultToday;
+      };
 });
     return result;
     } else {
