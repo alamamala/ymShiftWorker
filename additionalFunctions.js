@@ -1,22 +1,12 @@
 // Parse a file
-var xlsx = require('node-xlsx').default;
-
-const workSheetsFromFile = xlsx.parse(`table.xlsx`);
+const fs = require("fs");
+// var xlsx = require('node-xlsx').default,
+var jsonSecret = fs.readFileSync("secret.json", "utf8"),
+    secretParse = JSON.parse(jsonSecret);
 
 function telegramChat(shifter) {
-    switch (shifter) {
-        case 'Моисейченко Александр':
-            console.log('!!!!!!!');
-            return shifter + ' его Телеграм @';
-          break;
-        case 'Псевдоним Миши':
-            console.log('Мишка');
-            return shifter + ' его Телеграм @';
-          break;
-    }
+        return shifter + ' ' + secretParse[shifter];
 };
-
-
 function message() {
     let d = (new Date).getDate();
 	let result ='Сегодня ' + d + ' число. Дежурные на сегодня:\n';

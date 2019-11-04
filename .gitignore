@@ -1,3 +1,7 @@
 settings.txt
 table.xlsx
+secret.json
+credentials.json
+googleApiSpreadsheet.txt
+token.json
 node_modules
