@@ -272,7 +272,7 @@ app.hears('/today', ctx => {
 });
 
 app.hears('/start', ctx => {
-	ctx.replyWithMarkdown('Пока ничего не готово, но можно попробовать, команду /today');
+	ctx.replyWithMarkdown('Чтобы посмотреть расписание сменщиков тех.отдела на сегодня вызови команду /today');
 });  
 
 var shifterID = '';
