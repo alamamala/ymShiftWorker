@@ -4,8 +4,12 @@ const fs = require('fs'),
 const readline = require('readline');
 const {google} = require('googleapis');
 var jsonSecret = fs.readFileSync("secret.json", "utf8"),
-    secretParse = JSON.parse(jsonSecret);
-
+    secretParse = JSON.parse(jsonSecret),
+    jsonSecretChatID = fs.readFileSync("secretChatID.json", "utf8"),
+    secretParseChatID = JSON.parse(jsonSecretChatID),
+    shifterMe = '',
+    whenIWorkingvar ='';
+    
 function telegramChat(shifter) {
     return shifter + ' ' + secretParse[shifter];
 };
@@ -138,6 +142,77 @@ rows.map((row) => {
   return result;
 };
 
+// Функция для расписания
+
+function whenIWorking() {
+  fs.readFile('credentials.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Sheets API.
+    authorize(JSON.parse(content), whenIWorkingFunc);
+  });
+  };
+
+var workDays ='',
+    workNights ='';
+
+function whenIWorkingFunc(auth) {
+  let d = (new Date);
+  const sheets = google.sheets({version: 'v4', auth});
+  sheets.spreadsheets.values.get({
+    spreadsheetId: x,
+    range: 'A2:AE9',
+  }, (err, res) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const rows = res.data.values;
+    if (rows.length) {
+      // Print columns A and E, which correspond to indices 0 and 4.
+      workDays = 'Работаешь в день: '
+      workNights = 'Работаешь в ночь: '
+      rows.map((row) => {
+      // console.log(`${row[0]} ${row[d]}`);
+      if (row[0]==shifterMe) {
+        row.forEach(function(item,i){
+          if (item=='день') {
+            workDays += i + '; ';
+          } else if (item=='ночь'){
+            workNights += i + '; ';
+          };
+         
+        });
+        console.log(workDays);
+        console.log(workNights);
+        whenIWorkingvar = `Сегодня ${d.getDate()} число.\n`;
+        whenIWorkingvar += `${workDays}\n${workNights}`;
+      }
+});
+
+    } else {
+      console.log('No data found.');
+    }
+  });
+  return whenIWorkingvar;
+};
+
+
+//Конец функции для расписания
+
+
+
+async function newTimer(ctx,s) {
+  ctx.replyWithMarkdown(`Забираю данные со страницы с расписанием. Это займет ${s} секунд`);
+  while (s>0) {
+    await sleep(1000);
+    ctx.telegram.editMessageText(
+      ctx.update.message.chat.id,
+      ctx.update.message.message_id+1,
+      ctx.update.message.message_id+1,
+      `Забираю данные со страницы с расписанием. Это займет ${s} секунд`,
+    )
+    s--;  
+}
+}
+
+
 async function timer(ctx){
   ctx.replyWithMarkdown('Забираю данные со страницы с расписанием. Это займет 5 секунд');
   console.log(ctx.update.message.message_id);
@@ -198,6 +273,22 @@ app.hears('/today', ctx => {
 
 app.hears('/start', ctx => {
 	ctx.replyWithMarkdown('Пока ничего не готово, но можно попробовать, команду /today');
+});  
+
+var shifterID = '';
+app.hears(`/me`, ctx => {
+  shifterID = ctx.from.id;
+  shifterMe = secretParseChatID[shifterID];
+  console.log(shifterMe);
+  whenIWorking();
+  timer(ctx);
+    setTimeout(function(){
+    return ctx.telegram.editMessageText(
+      ctx.update.message.chat.id,
+      ctx.update.message.message_id+1,
+      ctx.update.message.message_id+1,
+      whenIWorkingvar);
+    },5000);
 });
 
 app.startPolling();
