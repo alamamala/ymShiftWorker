@@ -122,7 +122,7 @@ rows.map((row) => {
 }
 });
 rows.map((row) => {
-  if ((row[(d.getDate()-1)]=='ночь') && ((8>d.getHours()) || (d.getHours()>20))) {
+  if ((row[d.getDate()]=='ночь') && ((20<=d.getHours()) || (8>d.getHours()))) {
     resultToday = '\nСейчас в смене: ' + telegramChat(row[0]);
     result += resultToday;
   } else if ((row[d.getDate()]=='день') && ((d.getHours()<20) && (8<d.getHours()))) {
