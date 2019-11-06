@@ -198,7 +198,7 @@ function whenIWorkingFunc(auth) {
             workNights += i + '; ';
             if (i > (startOfWeek(d).getDate()) && i < (startOfWeek(d).getDate()+6)) {
               if (i == ((startOfWeek(d).getDate()+5) || (startOfWeek(d).getDate()+6)) ) { 
-                daysOfWeek += 'В выходной: ' + i + '; '} 
+                nightsOfWeek += 'В выходной: ' + i + '; '} 
               else {
               nightsOfWeek += i + '; ';
               };
@@ -206,10 +206,11 @@ function whenIWorkingFunc(auth) {
           };
          
         });
-        console.log(workDays);
-        console.log(workNights);
+        
         whenIWorkingvar = `Сегодня ${(new Date).getDate()} число.\n`;
         whenIWorkingvar += `${workDays}\n${workNights}\n\nНа этой неделе работаешь: \nВ день:${daysOfWeek}\nВ ночь: ${nightsOfWeek}`;
+        console.log(whenIWorkingvar);
+
       }
 });
 
