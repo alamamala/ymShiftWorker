@@ -14,6 +14,15 @@ function telegramChat(shifter) {
     return shifter + ' ' + secretParse[shifter];
 };
 
+function startOfWeek(date)
+  {
+    var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
+  
+    return new Date(date.setDate(diff));
+ 
+  }
+
+
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 // The file token.json stores the user's access and refresh tokens, and is
@@ -154,6 +163,9 @@ function whenIWorking() {
 
 var workDays ='',
     workNights ='';
+    daysOfWeek = '';
+    nightsOfWeek = '';
+
 
 function whenIWorkingFunc(auth) {
   let d = (new Date);
@@ -168,23 +180,41 @@ function whenIWorkingFunc(auth) {
       // Print columns A and E, which correspond to indices 0 and 4.
       workDays = 'Работаешь в день: '
       workNights = 'Работаешь в ночь: '
+      daysOfWeek = ''
       rows.map((row) => {
       // console.log(`${row[0]} ${row[d]}`);
       if (row[0]==shifterMe) {
         row.forEach(function(item,i){
           if (item=='день') {
             workDays += i + '; ';
+            if (i > (startOfWeek(d).getDate()) && i < (startOfWeek(d).getDate()+6)) {
+              if (i == ((startOfWeek(d).getDate()+5) || (startOfWeek(d).getDate()+6)) ) { 
+                daysOfWeek += 'В выходной: ' + i + '; '} 
+              else {
+                daysOfWeek += i + '; ';
+              };
+            };
           } else if (item=='ночь'){
             workNights += i + '; ';
+            if (i > (startOfWeek(d).getDate()) && i < (startOfWeek(d).getDate()+6)) {
+              if (i == ((startOfWeek(d).getDate()+5) || (startOfWeek(d).getDate()+6)) ) { 
+                daysOfWeek += 'В выходной: ' + i + '; '} 
+              else {
+              nightsOfWeek += i + '; ';
+              };
+            };
           };
          
         });
         console.log(workDays);
         console.log(workNights);
-        whenIWorkingvar = `Сегодня ${d.getDate()} число.\n`;
-        whenIWorkingvar += `${workDays}\n${workNights}`;
+        whenIWorkingvar = `Сегодня ${(new Date).getDate()} число.\n`;
+        whenIWorkingvar += `${workDays}\n${workNights}\n\nНа этой неделе работаешь: \nВ день:${daysOfWeek}\nВ ночь: ${nightsOfWeek}`;
       }
 });
+
+
+
 
     } else {
       console.log('No data found.');
@@ -279,16 +309,21 @@ var shifterID = '';
 app.hears(`/me`, ctx => {
   shifterID = ctx.from.id;
   shifterMe = secretParseChatID[shifterID];
-  console.log(shifterMe);
-  whenIWorking();
-  timer(ctx);
-    setTimeout(function(){
-    return ctx.telegram.editMessageText(
-      ctx.update.message.chat.id,
-      ctx.update.message.message_id+1,
-      ctx.update.message.message_id+1,
-      whenIWorkingvar);
-    },5000);
+  if (secretParseChatID[shifterID]) {
+    console.log(shifterMe);
+    whenIWorking();
+    timer(ctx);
+      setTimeout(function(){
+      return ctx.telegram.editMessageText(
+        ctx.update.message.chat.id,
+        ctx.update.message.message_id+1,
+        ctx.update.message.message_id+1,
+        whenIWorkingvar);
+      },5000);
+  } else {
+    return ctx.replyWithMarkdown('Данная функция предназначена только для сменщиков.');
+  }
+
 });
 
 app.startPolling();
