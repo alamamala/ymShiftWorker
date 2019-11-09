@@ -105,6 +105,7 @@ function whoIsToday(row, timeNow) {
 var x = fs.readFileSync("googleApiSpreadsheet.txt", "utf8");
 var result = '',
     resultToday = '';
+    resultPhoto = 'shit';
     
 function listMajors(auth) {
   let d = (new Date);
@@ -182,7 +183,6 @@ function whenIWorkingFunc(auth) {
       workNights = 'Работаешь в ночь: '
       daysOfWeek = ''
       rows.map((row) => {
-      // console.log(`${row[0]} ${row[d]}`);
       if (row[0]==shifterMe) {
         row.forEach(function(item,i){
           if (item=='день') {
@@ -207,8 +207,11 @@ function whenIWorkingFunc(auth) {
          
         });
         
+        resultPhoto += rows;
+        
         whenIWorkingvar = `Сегодня ${(new Date).getDate()} число.\n`;
         whenIWorkingvar += `${workDays}\n${workNights}\n\nНа этой неделе работаешь: \nВ день:${daysOfWeek}\nВ ночь: ${nightsOfWeek}`;
+        
         console.log(whenIWorkingvar);
 
       }
@@ -284,6 +287,20 @@ function sleep(ms){
   })
 };
 
+
+webshot = require('webshot');
+function PhotoScheldue(PhotoResult, ctx) {
+webshot(`<html><body>${PhotoResult}</body></html>`, `./temp/hello_world_${ctx.update.message.chat.id}.png`, {siteType:'html', 
+screenSize: {
+  width: 480
+, height: 180
+}}, function(err) {
+});
+setTimeout(function(){
+  return ctx.replyWithPhoto({ source: fs.createReadStream(`./temp/hello_world_${ctx.update.message.chat.id}.png`) });
+},5000);
+};
+
 app.hears('/today', ctx => {
     doIt();
     timer(ctx);
@@ -294,6 +311,8 @@ app.hears('/today', ctx => {
       ctx.update.message.message_id+1,
       result);
     },5000);
+    PhotoScheldue(resultPhoto, ctx);
+
     console.log(ctx.from);
         var json = JSON.stringify(ctx.from) + ',\n';
         fs.appendFile("users.json", json , function (err) {
