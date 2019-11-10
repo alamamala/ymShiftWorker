@@ -112,7 +112,7 @@ function listMajors(auth) {
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
     spreadsheetId: x,
-    range: 'A2:AE9',
+    range: 'A2:AF9',
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
@@ -173,7 +173,7 @@ function whenIWorkingFunc(auth) {
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
     spreadsheetId: x,
-    range: 'A2:AE9',
+    range: 'A2:AF9',
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
@@ -196,7 +196,7 @@ function whenIWorkingFunc(auth) {
             };
           } else if (item=='ночь'){
             workNights += i + '; ';
-            if (i > (startOfWeek(d).getDate()) && i < (startOfWeek(d).getDate()+6)) {
+            if (i > (startOfWeek(d).getDate()) && i <= (startOfWeek(d).getDate()+6)) {
               if (i == ((startOfWeek(d).getDate()+5) || (startOfWeek(d).getDate()+6)) ) { 
                 nightsOfWeek += 'В выходной: ' + i + '; '} 
               else {
@@ -208,7 +208,7 @@ function whenIWorkingFunc(auth) {
         });
         
         resultPhoto += rows;
-        
+
         whenIWorkingvar = `Сегодня ${(new Date).getDate()} число.\n`;
         whenIWorkingvar += `${workDays}\n${workNights}\n\nНа этой неделе работаешь: \nВ день:${daysOfWeek}\nВ ночь: ${nightsOfWeek}`;
         
