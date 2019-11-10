@@ -104,8 +104,8 @@ function whoIsToday(row, timeNow) {
 */
 var x = fs.readFileSync("googleApiSpreadsheet.txt", "utf8");
 var result = '',
-    resultToday = '';
-    resultPhoto = 'shit';
+    resultToday = '',
+    PhotoResult = '';
     
 function listMajors(auth) {
   let d = (new Date);
@@ -169,6 +169,7 @@ var workDays ='',
 
 
 function whenIWorkingFunc(auth) {
+  PhotoResult = `<table border="1"><tr><th>Сменщик</th><th>Понедельник</th><th>Вторник</th><th>Среда</th><th>Четверг</th><th>Пятница</th><th>Суббота</th><th>Воскресенье</th></tr><tr><td>${shifterMe}</td>`;
   let d = (new Date);
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
@@ -185,6 +186,9 @@ function whenIWorkingFunc(auth) {
       rows.map((row) => {
       if (row[0]==shifterMe) {
         row.forEach(function(item,i){
+          if (i > (startOfWeek(d).getDate()-1) && i <= (startOfWeek(d).getDate()+6)) {
+            PhotoResult += `<td>${item}</td>`;
+          }
           if (item=='день') {
             workDays += i + '; ';
             if (i > (startOfWeek(d).getDate()) && i < (startOfWeek(d).getDate()+6)) {
@@ -206,8 +210,7 @@ function whenIWorkingFunc(auth) {
           };
          
         });
-        
-        resultPhoto += rows;
+        PhotoResult += `</tr></table>`; // for photo
 
         whenIWorkingvar = `Сегодня ${(new Date).getDate()} число.\n`;
         whenIWorkingvar += `${workDays}\n${workNights}\n\nНа этой неделе работаешь: \nВ день:${daysOfWeek}\nВ ночь: ${nightsOfWeek}`;
@@ -224,7 +227,7 @@ function whenIWorkingFunc(auth) {
       console.log('No data found.');
     }
   });
-  return whenIWorkingvar;
+  return whenIWorkingvar;PhotoResult;
 };
 
 
@@ -292,8 +295,8 @@ webshot = require('webshot');
 function PhotoScheldue(PhotoResult, ctx) {
 webshot(`<html><body>${PhotoResult}</body></html>`, `./temp/hello_world_${ctx.update.message.chat.id}.png`, {siteType:'html', 
 screenSize: {
-  width: 480
-, height: 180
+  width: 700
+, height: 100
 }}, function(err) {
 });
 setTimeout(function(){
@@ -311,7 +314,6 @@ app.hears('/today', ctx => {
       ctx.update.message.message_id+1,
       result);
     },5000);
-    PhotoScheldue(resultPhoto, ctx);
 
     console.log(ctx.from);
         var json = JSON.stringify(ctx.from) + ',\n';
@@ -327,6 +329,7 @@ app.hears('/start', ctx => {
 
 var shifterID = '';
 app.hears(`/me`, ctx => {
+  PhotoResult = '';
   shifterID = ctx.from.id;
   shifterMe = secretParseChatID[shifterID];
   if (secretParseChatID[shifterID]) {
@@ -340,6 +343,14 @@ app.hears(`/me`, ctx => {
         ctx.update.message.message_id+1,
         whenIWorkingvar);
       },5000);
+      if (PhotoResult=='') {
+        setTimeout(function(){
+          PhotoScheldue(PhotoResult, ctx);
+        },4000)
+      } else {
+        PhotoScheldue(PhotoResult, ctx);
+      };
+      
   } else {
     return ctx.replyWithMarkdown('Данная функция предназначена только для сменщиков.');
   }
